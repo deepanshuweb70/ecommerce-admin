@@ -5,13 +5,21 @@ import {
   Users,
   Settings,
 } from 'lucide-react'
+import { NavLink } from 'react-router-dom'
 
 const menuItems = [
-  { label: 'Dashboard', icon: LayoutDashboard, active: true },
-  { label: 'Inventory', icon: Package },
-  { label: 'Orders', icon: ShoppingCart },
-  { label: 'Customers', icon: Users },
+  { label: 'Dashboard', icon: LayoutDashboard, to: '/' },
+  { label: 'Inventory', icon: Package, to: '/inventory' },
+  { label: 'Orders', icon: ShoppingCart, to: '/orders' },
+  { label: 'Customers', icon: Users, to: '/customers' },
 ]
+
+const linkClasses = ({ isActive }) =>
+  `flex items-center gap-3 rounded-xl px-4 py-3 ${
+    isActive
+      ? 'bg-blue-600 text-white'
+      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+  }`
 
 export default function Sidebar() {
   return (
@@ -24,30 +32,24 @@ export default function Sidebar() {
         Menu
       </p>
 
-      <nav className="flex flex-col gap-2">
-        {menuItems.map(({ label, icon: Icon, active }) => (
-          <a
+      <nav aria-label="Main navigation" className="flex flex-col gap-2">
+        {menuItems.map(({ label, icon: Icon, to }) => (
+          <NavLink
             key={label}
-            href="#"
-            className={`flex items-center gap-3 rounded-xl px-4 py-3 ${
-              active
-                ? 'bg-blue-600 text-white'
-                : 'text-slate-300 hover:bg-slate-800'
-            }`}
+            to={to}
+            end={to === '/'}
+            className={linkClasses}
           >
             <Icon size={19} />
             <span>{label}</span>
-          </a>
+          </NavLink>
         ))}
       </nav>
 
-      <a
-        href="#"
-        className="mt-auto flex items-center gap-3 rounded-xl px-4 py-3 text-slate-300 hover:bg-slate-800"
-      >
+      <NavLink to="/settings" className={`${linkClasses} mt-auto`}>
         <Settings size={19} />
         <span>Settings</span>
-      </a>
+      </NavLink>
     </aside>
   )
 }
