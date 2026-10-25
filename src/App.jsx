@@ -1,15 +1,57 @@
-import { Bell, CircleHelp, Package, ShoppingCart, Users } from 'lucide-react'
+import {
+  Bell,
+  CircleHelp,
+  DollarSign,
+  Package,
+  ShoppingCart,
+  Users,
+} from 'lucide-react'
 import { Route, Routes } from 'react-router-dom'
 import Sidebar from './components/Sidebar'
+import { customers, orders, products } from './data/mockData'
 
-const stats = [
-  { label: 'Revenue', value: '$24,780', icon: CircleHelp, color: 'text-blue-600' },
-  { label: 'Orders', value: '1,284', icon: ShoppingCart, color: 'text-violet-600' },
-  { label: 'Products', value: '856', icon: Package, color: 'text-amber-600' },
-  { label: 'Customers', value: '3,642', icon: Users, color: 'text-emerald-600' },
-]
+const currencyFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  maximumFractionDigits: 0,
+})
 
 function DashboardPage() {
+  const revenue = orders
+    .filter((order) => order.paymentStatus === 'Paid')
+    .reduce((total, order) => total + order.total, 0)
+
+  const stats = [
+    {
+      label: 'Revenue',
+      value: currencyFormatter.format(revenue),
+      caption: 'From paid orders',
+      icon: DollarSign,
+      color: 'text-blue-600',
+    },
+    {
+      label: 'Orders',
+      value: orders.length.toLocaleString(),
+      caption: 'In the sample dataset',
+      icon: ShoppingCart,
+      color: 'text-violet-600',
+    },
+    {
+      label: 'Products',
+      value: products.length.toLocaleString(),
+      caption: 'In the inventory',
+      icon: Package,
+      color: 'text-amber-600',
+    },
+    {
+      label: 'Customers',
+      value: customers.length.toLocaleString(),
+      caption: 'Registered customers',
+      icon: Users,
+      color: 'text-emerald-600',
+    },
+  ]
+
   return (
     <main className="min-w-0 flex-1 p-5 md:p-8">
       <header className="mb-8 flex items-center justify-between gap-4">
@@ -49,14 +91,14 @@ function DashboardPage() {
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {stats.map(({ label, value, icon: Icon, color }) => (
+        {stats.map(({ label, value, caption, icon: Icon, color }) => (
           <article key={label} className="rounded-2xl bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between">
               <span className="text-sm text-slate-500">{label}</span>
               <Icon className={color} size={21} />
             </div>
             <p className="mt-4 text-2xl font-bold text-slate-900">{value}</p>
-            <p className="mt-1 text-xs text-slate-400">Sample data</p>
+            <p className="mt-1 text-xs text-slate-400">{caption}</p>
           </article>
         ))}
       </section>
