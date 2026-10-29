@@ -1,10 +1,15 @@
 import {
   Bell,
   CircleHelp,
+  ChevronLeft,
+  ChevronRight,
   DollarSign,
+  Pencil,
+  Plus,
   Search,
   Package,
   ShoppingCart,
+  Trash2,
   Users,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
@@ -187,17 +192,57 @@ function PlaceholderPage({ title, description }) {
 function InventoryPage() {
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('All categories')
-  const categories = [...new Set(products.map((product) => product.category))]
+  const [inventory, setInventory] = useState(products)
+  const [page, setPage] = useState(1)
+  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [editingProduct, setEditingProduct] = useState(null)
+  const [formValues, setFormValues] = useState({ name: '', category: '', price: '', stock: '' })
+  const pageSize = 5
+  const categories = [...new Set(inventory.map((product) => product.category))]
   const filteredProducts = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
-    return products.filter((product) => {
+    return inventory.filter((product) => {
       const matchesQuery = `${product.name} ${product.category}`
         .toLowerCase()
         .includes(normalizedQuery)
       const matchesCategory = category === 'All categories' || product.category === category
       return matchesQuery && matchesCategory
     })
-  }, [category, query])
+  }, [category, inventory, query])
+  const pageCount = Math.max(1, Math.ceil(filteredProducts.length / pageSize))
+  const visibleProducts = filteredProducts.slice((page - 1) * pageSize, page * pageSize)
+
+  function openProductForm(product = null) {
+    setEditingProduct(product)
+    setFormValues(product
+      ? { name: product.name, category: product.category, price: String(product.price), stock: String(product.stock) }
+      : { name: '', category: '', price: '', stock: '' })
+    setIsFormOpen(true)
+  }
+
+  function saveProduct(event) {
+    event.preventDefault()
+    const productData = {
+      name: formValues.name.trim(),
+      category: formValues.category.trim(),
+      price: Number(formValues.price),
+      stock: Number(formValues.stock),
+    }
+    if (editingProduct) {
+      setInventory((current) => current.map((item) => item.id === editingProduct.id ? { ...item, ...productData } : item))
+    } else {
+      setInventory((current) => [{ id: crypto.randomUUID(), ...productData }, ...current])
+      setPage(1)
+    }
+    setIsFormOpen(false)
+  }
+
+  function deleteProduct(product) {
+    if (!window.confirm(`Delete ${product.name} from inventory?`)) return
+    const remaining = filteredProducts.length - 1
+    setInventory((current) => current.filter((item) => item.id !== product.id))
+    setPage((current) => Math.min(current, Math.max(1, Math.ceil(remaining / pageSize))))
+  }
 
   return (
     <main className="min-w-0 flex-1 p-5 md:p-8">
@@ -207,9 +252,12 @@ function InventoryPage() {
           <h2 className="text-2xl font-bold text-slate-900">Inventory</h2>
           <p className="mt-1 text-sm text-slate-500">Browse products and check stock levels.</p>
         </div>
-        <span className="rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700">
-          {filteredProducts.length} products
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700">{filteredProducts.length} products</span>
+          <button type="button" onClick={() => openProductForm()} className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">
+            <Plus size={18} /> Add product
+          </button>
+        </div>
       </header>
 
       <section className="rounded-2xl bg-white p-4 shadow-sm md:p-5">
@@ -221,14 +269,14 @@ function InventoryPage() {
               type="search"
               placeholder="Search product or category..."
               value={query}
-              onChange={(event) => setQuery(event.target.value)}
+              onChange={(event) => { setQuery(event.target.value); setPage(1) }}
               aria-label="Search inventory"
             />
           </label>
           <select
             className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-slate-700 outline-none focus:border-blue-500"
             value={category}
-            onChange={(event) => setCategory(event.target.value)}
+            onChange={(event) => { setCategory(event.target.value); setPage(1) }}
             aria-label="Filter by category"
           >
             <option>All categories</option>
@@ -237,7 +285,7 @@ function InventoryPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[620px] text-left text-sm">
+          <table className="w-full min-w-[760px] text-left text-sm">
             <thead className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-500">
               <tr>
                 <th className="px-3 py-3 font-medium">Product</th>
@@ -245,10 +293,11 @@ function InventoryPage() {
                 <th className="px-3 py-3 font-medium">Price</th>
                 <th className="px-3 py-3 font-medium">Stock</th>
                 <th className="px-3 py-3 font-medium">Availability</th>
+                <th className="px-3 py-3 text-right font-medium">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredProducts.map((product) => (
+              {visibleProducts.map((product) => (
                 <tr key={product.id} className="text-slate-700">
                   <td className="px-3 py-4 font-medium text-slate-900">{product.name}</td>
                   <td className="px-3 py-4">{product.category}</td>
@@ -258,6 +307,12 @@ function InventoryPage() {
                     <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${product.stock < 15 ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
                       {product.stock < 15 ? 'Low stock' : 'In stock'}
                     </span>
+                  </td>
+                  <td className="px-3 py-4">
+                    <div className="flex justify-end gap-2">
+                      <button type="button" onClick={() => openProductForm(product)} className="rounded-lg p-2 text-slate-500 hover:bg-blue-50 hover:text-blue-700" aria-label={`Edit ${product.name}`}><Pencil size={16} /></button>
+                      <button type="button" onClick={() => deleteProduct(product)} className="rounded-lg p-2 text-slate-500 hover:bg-red-50 hover:text-red-600" aria-label={`Delete ${product.name}`}><Trash2 size={16} /></button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -270,7 +325,43 @@ function InventoryPage() {
             </div>
           )}
         </div>
+        <footer className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4 text-sm text-slate-500">
+          <span>Showing {filteredProducts.length === 0 ? 0 : (page - 1) * pageSize + 1}–{Math.min(page * pageSize, filteredProducts.length)} of {filteredProducts.length}</span>
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={() => setPage((current) => Math.max(1, current - 1))} disabled={page === 1} className="rounded-lg border border-slate-200 p-2 enabled:hover:bg-slate-50 disabled:opacity-40" aria-label="Previous page"><ChevronLeft size={18} /></button>
+            <span className="px-2">Page {page} of {pageCount}</span>
+            <button type="button" onClick={() => setPage((current) => Math.min(pageCount, current + 1))} disabled={page === pageCount} className="rounded-lg border border-slate-200 p-2 enabled:hover:bg-slate-50 disabled:opacity-40" aria-label="Next page"><ChevronRight size={18} /></button>
+          </div>
+        </footer>
       </section>
+
+      {isFormOpen && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/40 p-4" onMouseDown={(event) => { if (event.target === event.currentTarget) setIsFormOpen(false) }}>
+          <section role="dialog" aria-modal="true" aria-labelledby="product-form-title" className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+            <h3 id="product-form-title" className="text-xl font-bold text-slate-900">{editingProduct ? 'Edit product' : 'Add product'}</h3>
+            <form className="mt-5 grid gap-4" onSubmit={saveProduct}>
+              <label className="grid gap-1.5 text-sm font-medium text-slate-700">Product name
+                <input required maxLength={80} className="rounded-xl border border-slate-200 px-3 py-2.5 font-normal outline-none focus:border-blue-500" value={formValues.name} onChange={(event) => setFormValues({ ...formValues, name: event.target.value })} />
+              </label>
+              <label className="grid gap-1.5 text-sm font-medium text-slate-700">Category
+                <input required maxLength={40} className="rounded-xl border border-slate-200 px-3 py-2.5 font-normal outline-none focus:border-blue-500" value={formValues.category} onChange={(event) => setFormValues({ ...formValues, category: event.target.value })} />
+              </label>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="grid gap-1.5 text-sm font-medium text-slate-700">Price (USD)
+                  <input required type="number" min="0.01" step="0.01" className="rounded-xl border border-slate-200 px-3 py-2.5 font-normal outline-none focus:border-blue-500" value={formValues.price} onChange={(event) => setFormValues({ ...formValues, price: event.target.value })} />
+                </label>
+                <label className="grid gap-1.5 text-sm font-medium text-slate-700">Stock units
+                  <input required type="number" min="0" step="1" className="rounded-xl border border-slate-200 px-3 py-2.5 font-normal outline-none focus:border-blue-500" value={formValues.stock} onChange={(event) => setFormValues({ ...formValues, stock: event.target.value })} />
+                </label>
+              </div>
+              <div className="mt-2 flex justify-end gap-3">
+                <button type="button" onClick={() => setIsFormOpen(false)} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700">Cancel</button>
+                <button type="submit" className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">{editingProduct ? 'Save changes' : 'Add product'}</button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
     </main>
   )
 }
