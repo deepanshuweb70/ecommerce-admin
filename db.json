@@ -1,0 +1,116 @@
+{
+  "products": [
+    {
+      "id": "product-1",
+      "name": "Wireless Headphones",
+      "category": "Electronics",
+      "price": 79.99,
+      "stock": 24
+    },
+    {
+      "id": "product-2",
+      "name": "Mechanical Keyboard",
+      "category": "Accessories",
+      "price": 119.5,
+      "stock": 18
+    },
+    {
+      "id": "product-3",
+      "name": "Desk Lamp",
+      "category": "Home",
+      "price": 42,
+      "stock": 31
+    },
+    {
+      "id": "product-4",
+      "name": "USB-C Hub",
+      "category": "Electronics",
+      "price": 54.99,
+      "stock": 12
+    },
+    {
+      "id": "product-5",
+      "name": "Laptop Stand",
+      "category": "Accessories",
+      "price": 38.5,
+      "stock": 27
+    },
+    {
+      "id": "product-6",
+      "name": "Wireless Mouse",
+      "category": "Accessories",
+      "price": 29.99,
+      "stock": 36
+    }
+  ],
+  "orders": [
+    {
+      "id": "order-1001",
+      "customerId": "customer-1",
+      "total": 199.49,
+      "status": "Shipped",
+      "paymentStatus": "Paid"
+    },
+    {
+      "id": "order-1002",
+      "customerId": "customer-2",
+      "total": 79.99,
+      "status": "Processing",
+      "paymentStatus": "Paid"
+    },
+    {
+      "id": "order-1003",
+      "customerId": "customer-3",
+      "total": 42,
+      "status": "Pending",
+      "paymentStatus": "Pending"
+    },
+    {
+      "id": "order-1004",
+      "customerId": "customer-4",
+      "total": 119.5,
+      "status": "Delivered",
+      "paymentStatus": "Paid"
+    },
+    {
+      "id": "order-1005",
+      "customerId": "customer-5",
+      "total": 68.49,
+      "status": "Delivered",
+      "paymentStatus": "Paid"
+    }
+  ],
+  "customers": [
+    {
+      "id": "customer-1",
+      "name": "Aarav Sharma",
+      "email": "aarav@example.com"
+    },
+    {
+      "id": "customer-2",
+      "name": "Diya Patel",
+      "email": "diya@example.com"
+    },
+    {
+      "id": "customer-3",
+      "name": "Kabir Singh",
+      "email": "kabir@example.com"
+    },
+    {
+      "id": "customer-4",
+      "name": "Anaya Mehta",
+      "email": "anaya@example.com"
+    },
+    {
+      "id": "customer-5",
+      "name": "Ishaan Rao",
+      "email": "ishaan@example.com"
+    },
+    {
+      "name": "raja sharma",
+      "email": "raja@gmail.com",
+      "id": "Jh0ir5AGbUY"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}
